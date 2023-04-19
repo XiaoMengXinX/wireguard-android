@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -7,21 +9,18 @@ plugins {
 version wireguardVersionName
 group groupName
 
-// Create a variable called keystorePropertiesFile, and initialize it to your
-// keystore.properties file, in the rootProject folder.
-final def keystorePropertiesFile = rootProject.file("keystore.properties")
-
 android {
-    compileSdkVersion 31
+    compileSdk 33
     buildFeatures {
         buildConfig = true
         dataBinding = true
         viewBinding = true
     }
+    namespace = 'com.wireguard.android'
     defaultConfig {
         applicationId 'com.wireguard.android'
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode wireguardVersionCode
         versionName wireguardVersionName
         buildConfigField 'int', 'MIN_SDK_VERSION', "$minSdkVersion.apiLevel"
@@ -31,34 +30,27 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         coreLibraryDesugaringEnabled = true
     }
-    if (keystorePropertiesFile.exists()) {
-        final def keystoreProperties = new Properties()
-        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
-        signingConfigs {
-            release {
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
-                storeFile rootProject.file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-            }
-        }
-    }
     buildTypes {
         release {
-            if (keystorePropertiesFile.exists()) signingConfig signingConfigs.release
             minifyEnabled true
+            shrinkResources true
             proguardFiles "proguard-android-optimize.txt", "proguard-rules.pro"
+            packagingOptions {
+                exclude "DebugProbesKt.bin"
+                exclude "kotlin-tooling-metadata.json"
+            }
         }
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
         }
     }
-    lintOptions {
-        disable('LongLogTag')
-        warning('MissingTranslation')
-        warning('ImpliedQuantity')
+    lint {
+        disable 'LongLogTag'
+        warning 'MissingTranslation', 'ImpliedQuantity'
+    }
+    androidResources {
+        generateLocaleConfig true
     }
 }
 
@@ -82,14 +74,11 @@ dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarVersion"
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.compilerArgs << '-Xlint:unchecked'
     options.deprecation = true
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
-        useIR = true
-    }
+tasks.withType(KotlinCompile).configureEach {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8
 }

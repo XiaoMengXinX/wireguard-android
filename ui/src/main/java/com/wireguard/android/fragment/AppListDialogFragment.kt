@@ -1,11 +1,15 @@
 /*
- * Copyright © 2017-2021 WireGuard LLC. All Rights Reserved.
+ * Copyright © 2017-2023 WireGuard LLC. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 package com.wireguard.android.fragment
 
 import android.Manifest
 import android.app.Dialog
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PackageInfoFlags
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
@@ -15,6 +19,7 @@ import androidx.databinding.Observable
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.wireguard.android.BR
 import com.wireguard.android.R
@@ -40,7 +45,7 @@ class AppListDialogFragment : DialogFragment() {
             try {
                 val applicationData: MutableList<ApplicationData> = ArrayList()
                 withContext(Dispatchers.IO) {
-                    val packageInfos = pm.getPackagesHoldingPermissions(arrayOf(Manifest.permission.INTERNET), 0)
+                    val packageInfos = getPackagesHoldingPermissions(pm, arrayOf(Manifest.permission.INTERNET))
                     packageInfos.forEach {
                         val packageName = it.packageName
                         val appInfo = it.applicationInfo
@@ -58,6 +63,7 @@ class AppListDialogFragment : DialogFragment() {
                 withContext(Dispatchers.Main.immediate) {
                     appData.clear()
                     appData.addAll(applicationData)
+                    setButtonText()
                 }
             } catch (e: Throwable) {
                 withContext(Dispatchers.Main.immediate) {
@@ -76,6 +82,15 @@ class AppListDialogFragment : DialogFragment() {
         initiallyExcluded = arguments?.getBoolean(KEY_IS_EXCLUDED) ?: true
     }
 
+    private fun getPackagesHoldingPermissions(pm: PackageManager, permissions: Array<String>): List<PackageInfo> {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.getPackagesHoldingPermissions(permissions, PackageInfoFlags.of(0L))
+        } else {
+            @Suppress("DEPRECATION")
+            pm.getPackagesHoldingPermissions(permissions, 0)
+        }
+    }
+
     private fun setButtonText() {
         val numSelected = appData.count { it.isSelected }
         button?.text = if (numSelected == 0)
@@ -88,7 +103,7 @@ class AppListDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val alertDialogBuilder = AlertDialog.Builder(requireActivity())
+        val alertDialogBuilder = MaterialAlertDialogBuilder(requireActivity())
         val binding = AppListDialogFragmentBinding.inflate(requireActivity().layoutInflater, null, false)
         binding.executePendingBindings()
         alertDialogBuilder.setView(binding.root)
@@ -139,6 +154,7 @@ class AppListDialogFragment : DialogFragment() {
         const val KEY_SELECTED_APPS = "selected_apps"
         const val KEY_IS_EXCLUDED = "is_excluded"
         const val REQUEST_SELECTION = "request_selection"
+
         fun newInstance(selectedApps: ArrayList<String?>?, isExcluded: Boolean): AppListDialogFragment {
             val extras = Bundle()
             extras.putStringArrayList(KEY_SELECTED_APPS, selectedApps)

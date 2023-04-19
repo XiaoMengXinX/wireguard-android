@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2021 WireGuard LLC. All Rights Reserved.
+ * Copyright © 2017-2023 WireGuard LLC. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 package com.wireguard.android.databinding
@@ -23,6 +23,7 @@ import com.wireguard.android.R
 import com.wireguard.android.databinding.ObservableKeyedRecyclerViewAdapter.RowConfigurationHandler
 import com.wireguard.android.widget.ToggleSwitch
 import com.wireguard.android.widget.ToggleSwitch.OnBeforeCheckedChangeListener
+import com.wireguard.android.widget.TvCardView
 import com.wireguard.config.Attribute
 import com.wireguard.config.InetNetwork
 import java.net.InetAddress
@@ -167,5 +168,17 @@ object BindingAdapters {
         } catch (_: Throwable) {
             0
         }
+    }
+
+    @JvmStatic
+    @BindingAdapter("isUp")
+    fun setIsUp(card: TvCardView, up: Boolean) {
+        card.isUp = up
+    }
+
+    @JvmStatic
+    @BindingAdapter("isDeleting")
+    fun setIsDeleting(card: TvCardView, deleting: Boolean) {
+        card.isDeleting = deleting
     }
 }

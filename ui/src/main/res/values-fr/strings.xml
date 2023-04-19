@@ -79,6 +79,8 @@
     <string name="bad_config_reason_unknown_section">Section inconnue</string>
     <string name="bad_config_reason_value_out_of_range">Valeur hors limite</string>
     <string name="bad_extension_error">Le fichier doit être .conf ou .zip</string>
+    <string name="error_no_qr_found">Le code QR est introuvable dans l’image</string>
+    <string name="error_qr_checksum">La vérification de la somme de contrôle du QR code a échoué</string>
     <string name="cancel">Annuler</string>
     <string name="config_delete_error">Impossible de supprimer le fichier de configuration %s</string>
     <string name="config_exists_error">La configuration de « %s » existe déjà</string>
@@ -105,9 +107,12 @@
     <string name="tv_select_a_storage_drive">Sélectionner un disque de stockage</string>
     <string name="tv_no_file_picker">Veuillez installer un utilitaire de gestion de fichiers pour parcourir les fichiers</string>
     <string name="tv_add_tunnel_get_started">Ajouter un tunnel pour commencer</string>
+    <string name="donate_title">♥ Faire un don au projet WireGuard</string>
+    <string name="donate_summary">Chaque contribution aide</string>
     <string name="disable_config_export_title">Désactiver l\'export de configuration</string>
     <string name="disable_config_export_description">La désactivation de l\'export de configuration rend les clés privées moins accessibles</string>
     <string name="dns_servers">Serveurs DNS</string>
+    <string name="dns_search_domains">Domaines de recherche DNS</string>
     <string name="edit">Modifier</string>
     <string name="endpoint">Point de terminaison</string>
     <string name="error_down">Erreur lors de la désactivation du tunnel : %s</string>
@@ -210,13 +215,13 @@
     <string name="tunnel_create_success">Tunnel «%s » créé avec succès</string>
     <string name="tunnel_error_already_exists">Le tunnel « %s » existe déjà</string>
     <string name="tunnel_error_invalid_name">Nom invalide</string>
-    <string name="tunnel_list_placeholder">Ajouter un tunnel en utilisant le bouton bleu</string>
+    <string name="tunnel_list_placeholder">Ajoutez un tunnel en utilisant le bouton ci-dessous</string>
     <string name="tunnel_name">Nom du tunnel</string>
     <string name="tunnel_on_error">Impossible d\'activer le tunnel (wgTurnOn a retourné %d)</string>
     <string name="tunnel_dns_failure">Impossible de résoudre le nom d\'hôte DNS: “%s”</string>
     <string name="tunnel_rename_error">Impossible de renommer le tunnel : %s</string>
     <string name="tunnel_rename_success">Tunnel renommé avec succès en «%s »</string>
-    <string name="type_name_go_userspace">Nom de l\'espace utilisateur</string>
+    <string name="type_name_go_userspace">Implémentation Go en espace utilisateur</string>
     <string name="type_name_kernel_module">Module noyau</string>
     <string name="unknown_error">Erreur inconnue</string>
     <string name="version_summary">%1$s backend %2$s</string>

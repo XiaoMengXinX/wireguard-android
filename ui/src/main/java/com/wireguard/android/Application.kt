@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2021 WireGuard LLC. All Rights Reserved.
+ * Copyright © 2017-2023 WireGuard LLC. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 package com.wireguard.android
@@ -16,6 +16,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.google.android.material.color.DynamicColors
 import com.wireguard.android.backend.Backend
 import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.WgQuickBackend
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.lang.ref.WeakReference
 import java.util.Locale
 
@@ -56,19 +58,13 @@ class Application : android.app.Application() {
             startActivity(intent)
             System.exit(0)
         }
-        if (BuildConfig.DEBUG) {
-            StrictMode.setVmPolicy(VmPolicy.Builder().detectAll().penaltyLog().build())
-            StrictMode.setThreadPolicy(ThreadPolicy.Builder().detectAll().penaltyLog().build())
-        }
     }
 
     private suspend fun determineBackend(): Backend {
         var backend: Backend? = null
-        var didStartRootShell = false
         if (UserKnobs.enableKernelModule.first() && WgQuickBackend.hasKernelSupport()) {
             try {
-                if (!didStartRootShell)
-                    rootShell.start()
+                rootShell.start()
                 val wgQuickBackend = WgQuickBackend(applicationContext, rootShell, toolsInstaller)
                 wgQuickBackend.setMultipleTunnels(UserKnobs.multipleTunnels.first())
                 backend = wgQuickBackend
@@ -88,14 +84,24 @@ class Application : android.app.Application() {
     override fun onCreate() {
         Log.i(TAG, USER_AGENT)
         super.onCreate()
+        DynamicColors.applyToActivitiesIfAvailable(this)
         rootShell = RootShell(applicationContext)
         toolsInstaller = ToolsInstaller(applicationContext, rootShell)
         preferencesDataStore = PreferenceDataStoreFactory.create { applicationContext.preferencesDataStoreFile("settings") }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            coroutineScope.launch {
-                AppCompatDelegate.setDefaultNightMode(
-                        if (UserKnobs.darkTheme.first()) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
+            runBlocking {
+                AppCompatDelegate.setDefaultNightMode(if (UserKnobs.darkTheme.first()) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
             }
+            UserKnobs.darkTheme.onEach {
+                val newMode = if (it) {
+                    AppCompatDelegate.MODE_NIGHT_YES
+                } else {
+                    AppCompatDelegate.MODE_NIGHT_NO
+                }
+                if (AppCompatDelegate.getDefaultNightMode() != newMode) {
+                    AppCompatDelegate.setDefaultNightMode(newMode)
+                }
+            }.launchIn(coroutineScope)
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
@@ -109,6 +115,11 @@ class Application : android.app.Application() {
                 Log.e(TAG, Log.getStackTraceString(e))
             }
         }
+
+        if (BuildConfig.DEBUG) {
+            StrictMode.setVmPolicy(VmPolicy.Builder().detectAll().penaltyLog().build())
+            StrictMode.setThreadPolicy(ThreadPolicy.Builder().detectAll().penaltyLog().build())
+        }
     }
 
     override fun onTerminate() {
@@ -121,27 +132,20 @@ class Application : android.app.Application() {
         private const val TAG = "WireGuard/Application"
         private lateinit var weakSelf: WeakReference<Application>
 
-        @JvmStatic
         fun get(): Application {
             return weakSelf.get()!!
         }
 
-        @JvmStatic
         suspend fun getBackend() = get().futureBackend.await()
 
-        @JvmStatic
         fun getRootShell() = get().rootShell
 
-        @JvmStatic
         fun getPreferencesDataStore() = get().preferencesDataStore
 
-        @JvmStatic
         fun getToolsInstaller() = get().toolsInstaller
 
-        @JvmStatic
         fun getTunnelManager() = get().tunnelManager
 
-        @JvmStatic
         fun getCoroutineScope() = get().coroutineScope
     }
 

@@ -25,7 +25,7 @@
         <item quantity="other">%d applicazioni escluse</item>
     </plurals>
     <plurals name="set_included_applications">
-        <item quantity="one">%d applicazione esclusa</item>
+        <item quantity="one">%d applicazione inclusa</item>
         <item quantity="other">%d applicazioni incluse</item>
     </plurals>
     <plurals name="n_excluded_applications">
@@ -33,7 +33,7 @@
         <item quantity="other">%d escluse</item>
     </plurals>
     <plurals name="n_included_applications">
-        <item quantity="one">%d escluse</item>
+        <item quantity="one">%d inclusa</item>
         <item quantity="other">%d incluse</item>
     </plurals>
     <string name="all_applications">Tutte le applicazioni</string>
@@ -79,6 +79,8 @@
     <string name="bad_config_reason_unknown_section">Sezione sconosciuta</string>
     <string name="bad_config_reason_value_out_of_range">Valore fuori scala</string>
     <string name="bad_extension_error">Il file deve essere .conf o .zip</string>
+    <string name="error_no_qr_found">Codice QR non trovato nell\'immagine</string>
+    <string name="error_qr_checksum">Verifica checksum del codice QR fallita</string>
     <string name="cancel">Annulla</string>
     <string name="config_delete_error">Impossibile eliminare il file di configurazione %s</string>
     <string name="config_exists_error">La configurazione per “%s” esiste già</string>
@@ -108,6 +110,7 @@
     <string name="disable_config_export_title">Disattiva esportazione config</string>
     <string name="disable_config_export_description">Disabilitare l\'esportazione della configurazione rende le chiavi private meno accessibili</string>
     <string name="dns_servers">Server DNS</string>
+    <string name="dns_search_domains">Domini di ricerca DNS</string>
     <string name="edit">Modifica</string>
     <string name="endpoint">Endpoint</string>
     <string name="error_down">Errore di disattivazione del tunnel: %s</string>
@@ -210,7 +213,6 @@
     <string name="tunnel_create_success">Tunnel “%s” creato correttamente</string>
     <string name="tunnel_error_already_exists">Il tunnel “%s” esiste già</string>
     <string name="tunnel_error_invalid_name">Nome non valido</string>
-    <string name="tunnel_list_placeholder">Aggiungi un tunnel usando il pulsante blu</string>
     <string name="tunnel_name">Nome tunnel</string>
     <string name="tunnel_on_error">Impossibile attivare il tunnel (wgTurnOn ha risposto %d)</string>
     <string name="tunnel_dns_failure">Impossibile risolve il nome di domino: \"%s\"</string>

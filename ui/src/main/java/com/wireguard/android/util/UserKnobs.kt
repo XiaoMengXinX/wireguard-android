@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2021 WireGuard LLC. All Rights Reserved.
+ * Copyright © 2017-2023 WireGuard LLC. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,6 +40,12 @@ object UserKnobs {
         get() = Application.getPreferencesDataStore().data.map {
             it[DARK_THEME] ?: false
         }
+
+    suspend fun setDarkTheme(on: Boolean) {
+        Application.getPreferencesDataStore().edit {
+            it[DARK_THEME] = on
+        }
+    }
 
     private val ALLOW_REMOTE_CONTROL_INTENTS = booleanPreferencesKey("allow_remote_control_intents")
     val allowRemoteControlIntents: Flow<Boolean>

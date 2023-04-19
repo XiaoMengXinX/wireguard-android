@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2021 WireGuard LLC. All Rights Reserved.
+ * Copyright © 2017-2023 WireGuard LLC. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -324,6 +324,9 @@ public final class GoBackend implements Backend {
             currentTunnelHandle = -1;
             currentConfig = null;
             wgTurnOff(handleToClose);
+            try {
+                vpnService.get(0, TimeUnit.NANOSECONDS).stopSelf();
+            } catch (final TimeoutException ignored) { }
         }
 
         tunnel.onStateChange(state);

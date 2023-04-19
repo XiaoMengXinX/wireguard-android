@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2021 WireGuard LLC. All Rights Reserved.
+ * Copyright © 2017-2023 WireGuard LLC. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 package com.wireguard.android.fragment
@@ -16,6 +16,8 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -39,8 +41,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
-import java.util.ArrayList
-import java.util.HashSet
 
 /**
  * Fragment containing a list of known WireGuard tunnels. It allows creating and deleting tunnels.
@@ -48,6 +48,7 @@ import java.util.HashSet
 class TunnelListFragment : BaseFragment() {
     private val actionModeListener = ActionModeListener()
     private var actionMode: ActionMode? = null
+    private var backPressedCallback: OnBackPressedCallback? = null
     private var binding: TunnelListFragmentBinding? = null
     private val tunnelFileImportResultLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { data ->
         if (data == null) return@registerForActivityResult
@@ -61,7 +62,7 @@ class TunnelListFragment : BaseFragment() {
                     TunnelImporter.importTunnel(parentFragmentManager, result.text) { showSnackbar(it) }
                 } catch (e: Exception) {
                     val error = ErrorMessages[e]
-                    val message = requireContext().getString(R.string.import_error, error)
+                    val message = Application.get().resources.getString(R.string.import_error, error)
                     Log.e(TAG, message, e)
                     showSnackbar(message)
                 }
@@ -96,6 +97,8 @@ class TunnelListFragment : BaseFragment() {
         val bottomSheet = AddTunnelsSheet()
         binding?.apply {
             createFab.setOnClickListener {
+                if (childFragmentManager.findFragmentByTag("BOTTOM_SHEET") != null)
+                    return@setOnClickListener
                 childFragmentManager.setFragmentResultListener(AddTunnelsSheet.REQUEST_KEY_NEW_TUNNEL, viewLifecycleOwner) { _, bundle ->
                     when (bundle.getString(AddTunnelsSheet.REQUEST_METHOD)) {
                         AddTunnelsSheet.REQUEST_CREATE -> {
@@ -112,10 +115,13 @@ class TunnelListFragment : BaseFragment() {
                         }
                     }
                 }
-                bottomSheet.show(childFragmentManager, "BOTTOM_SHEET")
+                bottomSheet.showNow(childFragmentManager, "BOTTOM_SHEET")
             }
             executePendingBindings()
         }
+        backPressedCallback = requireActivity().onBackPressedDispatcher.addCallback(this) { actionMode?.finish() }
+        backPressedCallback?.isEnabled = false
+
         return binding?.root
     }
 
@@ -240,6 +246,7 @@ class TunnelListFragment : BaseFragment() {
 
         override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
             actionMode = mode
+            backPressedCallback?.isEnabled = true
             if (activity != null) {
                 resources = activity!!.resources
             }
@@ -251,6 +258,7 @@ class TunnelListFragment : BaseFragment() {
 
         override fun onDestroyActionMode(mode: ActionMode) {
             actionMode = null
+            backPressedCallback?.isEnabled = false
             resources = null
             animateFab(binding?.createFab, true)
             checkedItems.clear()
@@ -270,7 +278,7 @@ class TunnelListFragment : BaseFragment() {
             }
             val adapter = if (binding == null) null else binding!!.tunnelList.adapter
             if (actionMode == null && !checkedItems.isEmpty() && activity != null) {
-                (activity as AppCompatActivity?)!!.startSupportActionMode(this)
+                (activity as AppCompatActivity).startSupportActionMode(this)
             } else if (actionMode != null && checkedItems.isEmpty()) {
                 actionMode!!.finish()
             }
